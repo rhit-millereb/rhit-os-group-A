@@ -125,6 +125,8 @@ found:
   p->pid = allocpid();
   p->state = USED;
 
+  p->thread_count = 0;
+
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
     freeproc(p);
@@ -680,4 +682,47 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+
+int 
+thread_init(struct thread_t *thread) {
+  //get the current proc
+  struct proc *p = myproc();
+
+  //set the thread vars to defaults
+  thread->id = p->thread_count;
+  thread->state = USED;
+  thread->read = 0;
+  thread->write = 0;
+
+  printf("Thread Inited %d\n", thread->id);
+
+  //return showing the thread was initialized
+  return 0;
+}
+
+void thread_create(struct thread_t *thread, void (*f)(void), void *arg) {
+  struct proc *p = myproc();
+  
+  //assign the program counter
+  thread->program_counter = f;
+
+  //map the thread page table, building a new stack
+
+
+  //add the argument to the top of the stack
+
+
+  //show in the parent process that the thread is created an active
+  p->thread_head[p->thread_count-1] = *thread;
+  p->thread_count += 1;
+}
+
+void thread_join(struct thread_t thread) {
+    printf("Thread Join");
+}
+
+void thread_exit(struct thread_t thread) {
+    printf("Thread Exit");
 }

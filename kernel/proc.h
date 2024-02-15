@@ -1,3 +1,5 @@
+#define MAXTHREADS 20
+
 // Saved registers for kernel context switches.
 struct context {
   uint64 ra;
@@ -79,7 +81,7 @@ struct trapframe {
   /* 280 */ uint64 t6;
 };
 
-enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE };
+enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE, JOINING };
 
 // Per-process state
 struct proc {
@@ -95,6 +97,11 @@ struct proc {
   // wait_lock must be held when using this:
   struct proc *parent;         // Parent process
 
+  // thread variables
+  int thread_count;
+  struct thread_t *thread_head;
+
+
   // these are private to the process, so p->lock need not be held.
   uint64 kstack;               // Virtual address of kernel stack
   uint64 sz;                   // Size of process memory (bytes)
@@ -105,3 +112,23 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 };
+
+/*
+threads structure, holds all the information for the thread
+includes the thread ID and the threads ptable
+*/
+struct thread_t {
+    int id;
+    enum procstate state;
+    
+    struct proc parent_procedure;
+
+    pagetable_t thread_table;
+
+    void *program_counter;
+
+    int read;
+    int write;
+};
+
+int thread_init(struct thread_t *thread);
