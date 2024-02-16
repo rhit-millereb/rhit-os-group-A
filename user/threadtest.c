@@ -52,8 +52,13 @@ void main(void) {
     
     // create a thread to start the basic tests on
     struct thread_t thread;
-    thread_create(&thread, *test_thread_create, (void*) 1);
+    int create_result = thread_create(&thread, *test_thread_create, (void*) 1);
     // if reaches this point, the main thread is created and the main function is still running
+    if (create_result < 0) {
+        mprint("Test 1 FAILED: Create thread failed with code:");
+        printf("%d", create_result);
+        return;
+    }
     mprint("Test 1 Passed: Thread Created, main function still running\n");
 
     
@@ -66,9 +71,11 @@ void main(void) {
         mprint("Test 2: Passed");
     } else if (x == 0) {
         mprint("Test 2 FAILED: Main did not see child thread changes to global var \'x\'");
+        return;
     } else if (join_result != 0) {
         mprint("Test 2 FAILED: Join threw error code");
         printf("%d", join_result);
+        return;
     }
 
 
@@ -90,6 +97,7 @@ void main(void) {
         if (array[i] != i) {
             mprint("Test 3: FAILED: Array did not match at index:");
             printf("%d  Found: %d", i, array[i]);
+            return;
         }
     }
     mprint("Test 3: Passed");
