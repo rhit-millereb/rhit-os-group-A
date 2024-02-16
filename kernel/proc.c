@@ -771,15 +771,17 @@ uint64 join(int tid) {
   //enter an infinite loop to wait until the target is a zombie
   while (1) {
     if(p->state == ZOMBIE) {
-      //release the targets stack
-      kfree(&p->kstack);
+      p->state = UNUSED;
+      p->pid = 0;
+      p->kstack = 0;
 
       //release the lock on the parent
       release(&parent->lock);
+      break;
     }
 
     //sleep to save resources, also shows the parent process is sleeping
-    sleep(parent, &parent->lock);
+    //sleep(parent, &parent->lock);
   }
 
   return 0;
