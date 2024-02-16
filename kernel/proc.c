@@ -686,20 +686,20 @@ procdump(void)
   }
 }
 
-int join(uint64_t id) {
+int join(int id) {
   //get the current procedure
-  struct proc *child = myproc();
-  struct proc *parent;
+  //struct proc *child = myproc();
+  //struct proc *parent;
 
   //acqurie the lock on the page table
-  acquire(&(p->pagetable.lock));
+  //acquire(&(parent->pagetable->lock));
 
   //enter an infinite loop, so wait for the procedure to 
   while(1) {
     //determine if the process has become a zombie, if so then the join is complete
-    if(p->state == ZOMBIE) {
-      kfree(p->kstack);
-    }
+    //if(parent->state == ZOMBIE) {
+      //kfree(parent->kstack);
+    //}
   }
 
   return 0;
