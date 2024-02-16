@@ -686,21 +686,18 @@ procdump(void)
   }
 }
 
-int join(int id) {
-  //get the current procedure
-  //struct proc *child = myproc();
-  //struct proc *parent;
+int procclone(void(*f)(void*), void *arg, void* stack)
+{
+  struct proc *p = myproc();
 
-  //acqurie the lock on the page table
-  //acquire(&(parent->pagetable->lock));
-
-  //enter an infinite loop, so wait for the procedure to 
-  while(1) {
-    //determine if the process has become a zombie, if so then the join is complete
-    //if(parent->state == ZOMBIE) {
-      //kfree(parent->kstack);
-    //}
-  }
-
+  struct proc *np;
+  np = allocproc();
+  np->sz = p->sz;
+  np->parent = p;
+  uvmcopy(p->pagetable, np->pagetable, p->sz);
+  np->state = RUNNABLE;
+  p->thread_count++;
+  np->thread_count = p->thread_count;
+  
   return 0;
 }
