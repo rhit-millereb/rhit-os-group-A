@@ -124,6 +124,7 @@ struct thread_t {
     struct proc *parent_procedure;
 
     pagetable_t thread_table;
+    struct context context;
 
     void *program_counter;
 

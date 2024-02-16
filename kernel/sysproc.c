@@ -89,3 +89,8 @@ sys_uptime(void)
   release(&tickslock);
   return xticks;
 }
+
+
+int sys_initThread(struct thread_t *thread) {
+  return thread_init(thread);
+}
