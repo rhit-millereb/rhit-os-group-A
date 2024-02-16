@@ -448,7 +448,7 @@ scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
-  struct thread_t *t;
+  //struct thread_t *t;
 
   c->proc = 0;
   for(;;){
@@ -468,18 +468,6 @@ scheduler(void)
         // Process is done running for now.
         // It should have changed its p->state before coming back.
         c->proc = 0;
-      }
-
-      // go over the threads on the process
-      if (p->thread_count > 0) {
-        for (t= p->thread_head; t < &(p->thread_head[p->thread_count]); t++) {
-          printf("Going over child thread: %d", t->id);
-
-          //determine if the thread is runnable
-          if(t->state == RUNNABLE) {
-            //
-          }
-        }
       }
 
       release(&p->lock);
@@ -696,56 +684,4 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
-}
-
-
-int 
-thread_init(struct thread_t *thread) {
-  //get the current proc
-  struct proc *p = myproc();
-
-  //set the thread vars to defaults
-  thread->id = p->thread_count;
-  thread->state = USED;
-  thread->read = 0;
-  thread->write = 0;
-
-  printf("Thread Inited %d\n", thread->id);
-
-  //return showing the thread was initialized
-  return 0;
-}
-
-void thread_create(struct thread_t *thread, void (*f)(void), void *arg) {
-  struct proc *p = myproc();
-  
-  //assign the program counter
-  thread->program_counter = f;
-  thread->parent_procedure = p;
-
-  //map the thread page table, building a new stack
-  
-
-
-  //add the argument to the top of the stack
-
-
-  //show in the parent process that the thread is created an active
-  p->thread_head[p->thread_count-1] = *thread;
-  p->thread_count += 1;
-}
-
-void thread_join(struct thread_t thread) {
-  struct proc *p = myproc();
-
-  //set the main proc as sleeping, waiting for certain child to finish
-  p->state = SLEEPING;
-
-
-
-  printf("Thread Joining");
-}
-
-void thread_exit(struct thread_t thread) {
-    printf("Thread Exit");
 }

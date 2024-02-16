@@ -112,27 +112,3 @@ struct proc {
   struct inode *cwd;           // Current directory
   char name[16];               // Process name (debugging)
 };
-
-/*
-threads structure, holds all the information for the thread
-includes the thread ID and the threads ptable
-*/
-struct thread_t {
-    int id;
-    enum procstate state;
-    
-    struct proc *parent_procedure;
-
-    pagetable_t thread_table;
-    struct context context;
-
-    void *program_counter;
-
-    int read;
-    int write;
-};
-
-int thread_init(struct thread_t *thread);
-void thread_create(struct thread_t *thread, void (*f)(void), void *arg);
-void thread_join(struct thread_t thread);
-void thread_exit(struct thread_t thread);
