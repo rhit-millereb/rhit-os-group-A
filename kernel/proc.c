@@ -448,7 +448,8 @@ scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
-  
+  struct thread_t *t;
+
   c->proc = 0;
   for(;;){
     // Avoid deadlock by ensuring that devices can interrupt.
@@ -468,6 +469,19 @@ scheduler(void)
         // It should have changed its p->state before coming back.
         c->proc = 0;
       }
+
+      // go over the threads on the process
+      if (p->thread_count > 0) {
+        for (t= p->thread_head; t < &(p->thread_head[p->thread_count]); t++) {
+          printf("Going over child thread: %d", t->id);
+
+          //determine if the thread is runnable
+          if(t->state == RUNNABLE) {
+            //
+          }
+        }
+      }
+
       release(&p->lock);
     }
   }
@@ -707,8 +721,10 @@ void thread_create(struct thread_t *thread, void (*f)(void), void *arg) {
   
   //assign the program counter
   thread->program_counter = f;
+  thread->parent_procedure = p;
 
   //map the thread page table, building a new stack
+  
 
 
   //add the argument to the top of the stack
@@ -720,7 +736,14 @@ void thread_create(struct thread_t *thread, void (*f)(void), void *arg) {
 }
 
 void thread_join(struct thread_t thread) {
-    printf("Thread Join");
+  struct proc *p = myproc();
+
+  //set the main proc as sleeping, waiting for certain child to finish
+  p->state = SLEEPING;
+
+
+
+  printf("Thread Joining");
 }
 
 void thread_exit(struct thread_t thread) {
