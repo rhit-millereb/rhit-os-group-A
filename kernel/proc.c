@@ -701,3 +701,22 @@ int procclone(void(*f)(void*), void *arg, void* stack)
   
   return 0;
 }
+
+
+uint64 join(void* tid) {
+  printf("Kernel: Running join\n");
+
+  //ensure that the tid of the thread is valid
+  if(tid < 0) {
+    printf("Join: Invalid TID\n");
+    return -1;
+  }
+
+  //create instances of parents/child, parent is current process
+  struct proc *parent = myproc();
+  struct proc *target;
+
+  
+
+  return 0;
+}

@@ -25,13 +25,13 @@ void main(void) {
     
     struct thread_t thread;
 
-    thread_create(&thread, *test_thread_create, (void*) 1);
+    //thread_create(&thread, *test_thread_create, (void*) 1);
 
     printf("Main: Thread Created, function still running\n");
 
-    printf("Main: Starting Join\n")
+    printf("Main: Starting Join\n");
 
     thread_join(thread);
 
-    printf("Main: Completed Join\n")
+    printf("Main: Completed Join\n");
 }

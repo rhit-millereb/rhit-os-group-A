@@ -1,6 +1,6 @@
 #include "kernel/types.h"
-#include "kernel/proc.c"
 #include "user.h"
+
 
 
 struct thread_t {
@@ -18,7 +18,11 @@ int thread_create(struct thread_t *thread, void(*f)(void*), void* arg) {
     return procclone(f, arg, thread->stack);
 }
 
+
 int thread_join(struct thread_t thread) {
+    int i = 1;
+    
+    join((void*) &i);
 
     return 0;
 }
