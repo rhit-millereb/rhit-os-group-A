@@ -31,7 +31,11 @@ void main(void) {
 
     printf("Main: Starting Join\n");;
 
-    thread_join(thread);
+    int join_result = thread_join(thread);
 
-    printf("Main: Completed Join\n");;
+    if(join_result == 0) {
+        printf("Main: Join Successful\n");
+    } else {
+        printf("Main: Join Failed\n");
+    }
 }

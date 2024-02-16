@@ -42,4 +42,4 @@ int atoi(const char*);
 int memcmp(const void *, const void *, uint);
 void *memcpy(void *, const void *, uint);
 int procclone(void(*f)(void*), void*, void*);
-int join(void*);
+int join(int);

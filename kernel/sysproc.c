@@ -90,13 +90,6 @@ sys_uptime(void)
   return xticks;
 }
 
-<<<<<<< HEAD
-
-uint64 sys_join(void) {
-  uint64 addr;
-  argaddr(0, &addr);
-  return join((void*) addr);
-=======
 uint64
 sys_procclone(void)
 {
@@ -105,5 +98,10 @@ sys_procclone(void)
   argaddr(1, &arg);
   argaddr(2, &stack);
   return procclone((void*)f, (void*)arg, (void*)stack);
->>>>>>> 73478d7646d9398c429037eb23a6c65ebb430688
+}
+
+uint64 sys_join(void) {
+  uint64 addr;
+  argaddr(0, &addr);
+  return join((int) addr);
 }

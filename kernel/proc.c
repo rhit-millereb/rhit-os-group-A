@@ -703,8 +703,9 @@ int procclone(void(*f)(void*), void *arg, void* stack)
 }
 
 
-uint64 join(void* tid) {
-  printf("Kernel: Running join\n");
+uint64 join(int tid) {
+  int id = tid;
+  printf("Kernel: Running join on %d\n", id);
 
   //ensure that the tid of the thread is valid
   if(tid < 0) {
@@ -714,9 +715,44 @@ uint64 join(void* tid) {
 
   //create instances of parents/child, parent is current process
   struct proc *parent = myproc();
-  struct proc *target;
+  //struct proc *target;
+  struct proc *p;
 
-  
+  //iterate through all the processes to find the child process
+  int found_target = 0;
+  for(p = &proc[0]; p < &proc[NPROC]; p++) {
+
+    if(p->pid == id) {
+      found_target = 1;
+      break;
+    }
+
+  }
+
+  // determine if a target was found
+  if(!found_target) {
+    printf("Join: Could not find target\n");
+    return -1;
+  }
+
+  // acquire the lock on the parent process page table
+  parent->state = SLEEPING;
+  acquire(&parent->lock);
+  printf("Kernel: Found target with pid: %d\n", p->pid);
+
+  //enter an infinite loop to wait until the target is a zombie
+  while (1) {
+    if(p->state == ZOMBIE) {
+      //release the targets stack
+      kfree(&p->kstack);
+
+      //release the lock on the parent
+      release(&parent->lock);
+    }
+
+    //sleep to save resources, also shows the parent process is sleeping
+    sleep(parent, &parent->lock);
+  }
 
   return 0;
 }

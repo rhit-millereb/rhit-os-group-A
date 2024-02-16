@@ -24,9 +24,9 @@ int thread_create(struct thread_t *thread, void(*f)(void*), void* arg) {
 
 
 int thread_join(struct thread_t thread) {
-    int i = 1;
+    //int i = 1;
     
-    join((void*) &i);
+    join(1);
 
     return 0;
 }
