@@ -112,7 +112,6 @@ allocproc(void)
   struct proc *p;
 
   for(p = proc; p < &proc[NPROC]; p++) {
-    printf("%d\n", p);
     acquire(&p->lock);
     if(p->state == UNUSED) {
       goto found;
@@ -689,22 +688,48 @@ procdump(void)
 
 int procclone(void(*f)(void*), void *arg, void* stack)
 {
+  int i, pid;
+  struct proc *np;
   struct proc *p = myproc();
 
-  struct proc *np;
-  if((np = allocproc()) == 0) {
+  // Allocate process.
+  if((np = allocproc()) == 0){
     return -1;
   }
   np->sz = p->sz;
-  np->parent = p;
-  uvmcopy(p->pagetable, np->pagetable, p->sz);
-  np->state = RUNNABLE;
+  //Sets the stack data for new proc
+  uint new_stack = (uint64)stack + PGSIZE;
+  int user_stack[2];
+  user_stack[0] = 0xffffffff;
+  user_stack[1] = (uint64)arg;
+  stack -= 8;
+  copyout(np->pagetable, new_stack, (char*)user_stack, 8);
+
+  // copy saved user registers.
+  *(np->trapframe) = *(p->trapframe);
+
+  // Cause fork to return 0 in the child.
+  np->trapframe->a0 = 0;
+  np->trapframe->sp = new_stack;
+  // np->trapframe->epc = f;
+
+  // increment reference counts on open file descriptors.
+  for(i = 0; i < NOFILE; i++)
+    if(p->ofile[i])
+      np->ofile[i] = filedup(p->ofile[i]);
+  np->cwd = idup(p->cwd);
+
   p->thread_count++;
   np->thread_count = p->thread_count;
-  
-  return 0;
-}
+  safestrcpy(np->name, p->name, sizeof(p->name));
 
+  pid = np->pid;
+  np->parent = p;
+  np->state = RUNNABLE;
+  release(&np->lock);
+
+  return pid;
+}
 
 uint64 join(int tid) {
   int id = tid;
