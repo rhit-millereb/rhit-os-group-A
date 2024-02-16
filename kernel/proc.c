@@ -112,6 +112,7 @@ allocproc(void)
   struct proc *p;
 
   for(p = proc; p < &proc[NPROC]; p++) {
+    printf("%d\n", p);
     acquire(&p->lock);
     if(p->state == UNUSED) {
       goto found;
@@ -691,7 +692,9 @@ int procclone(void(*f)(void*), void *arg, void* stack)
   struct proc *p = myproc();
 
   struct proc *np;
-  np = allocproc();
+  if((np = allocproc()) == 0) {
+    return -1;
+  }
   np->sz = p->sz;
   np->parent = p;
   uvmcopy(p->pagetable, np->pagetable, p->sz);

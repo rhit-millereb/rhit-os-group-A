@@ -19,6 +19,7 @@ int thread_create(struct thread_t *thread, void(*f)(void*), void* arg) {
     }
     if(*(uint*)pagetable % PGSIZE == 0) thread->stack = pagetable;
     else thread->stack = pagetable - (*(uint*)pagetable % PGSIZE);
+    thread->busy = 1;
     return procclone(f, arg, thread->stack);
 }
 
