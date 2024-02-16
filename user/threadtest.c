@@ -29,9 +29,9 @@ void main(void) {
 
     printf("Main: Thread Created, function still running\n");
 
-    printf("Main: Starting Join\n");
+    printf("Main: Starting Join\n");;
 
     thread_join(thread);
 
-    printf("Main: Completed Join\n");
+    printf("Main: Completed Join\n");;
 }
