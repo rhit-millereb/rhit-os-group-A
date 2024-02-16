@@ -81,7 +81,7 @@ struct trapframe {
   /* 280 */ uint64 t6;
 };
 
-enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE, JOINING };
+enum procstate { UNUSED, USED, SLEEPING, RUNNABLE, RUNNING, ZOMBIE, KILLED };
 
 // Per-process state
 struct proc {
@@ -99,7 +99,6 @@ struct proc {
 
   // thread variables
   int thread_count;
-  struct thread_t *thread_head;
 
 
   // these are private to the process, so p->lock need not be held.
