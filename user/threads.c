@@ -27,16 +27,23 @@ int thread_create(struct thread_t *thread, void(*f)(void*), void* arg) {
     thread->busy = 1;
     
     //Clones the physical memory data from the old thread to the new one
-    thread->id = procclone(f, arg, thread->stack);
-    if(thread->id < 0) return -1;
-    return thread->id;
+    int newID = procclone(f, arg, thread->stack);
+    thread->id = newID;
+
+    //determine if procclone failed and return the error code
+    if (newID < 0) {
+        return newID;
+    }
+
+    //return showing function was successful
+    return 0;
 }
 
 
 int thread_join(struct thread_t thread) {
     //int i = 1;
     
-    join(1);
+    join(thread.id);
 
     return 0;
 }
