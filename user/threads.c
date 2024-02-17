@@ -41,14 +41,5 @@ int thread_create(struct thread_t *thread, void(*f)(void*), void* arg) {
 
 
 int thread_join(struct thread_t thread) {
-    //int i = 1;
-    
-    join(thread.id);
-
-    return 0;
-}
-
-int thread_kill(struct thread_t thread) {
-
-    return 0;
+    return join(thread.id);
 }
