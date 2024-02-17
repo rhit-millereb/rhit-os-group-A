@@ -125,6 +125,8 @@ found:
   p->pid = allocpid();
   p->state = USED;
 
+  p->thread_count = 0;
+
   // Allocate a trapframe page.
   if((p->trapframe = (struct trapframe *)kalloc()) == 0){
     freeproc(p);
@@ -446,7 +448,8 @@ scheduler(void)
 {
   struct proc *p;
   struct cpu *c = mycpu();
-  
+  //struct thread_t *t;
+
   c->proc = 0;
   for(;;){
     // Avoid deadlock by ensuring that devices can interrupt.
@@ -466,6 +469,7 @@ scheduler(void)
         // It should have changed its p->state before coming back.
         c->proc = 0;
       }
+
       release(&p->lock);
     }
   }
@@ -680,4 +684,128 @@ procdump(void)
     printf("%d %s %s", p->pid, state, p->name);
     printf("\n");
   }
+}
+
+int procclone(void(*f)(void*), void *arg, void* stack)
+{
+  int i, pid;
+  struct proc *np;
+  struct proc *p = myproc();
+
+  if(((uint64)stack % PGSIZE) != 0) {
+    printf("Bad stack page size!\n");
+    return -1;
+  }
+
+  if ((p->sz - (uint64)stack) < PGSIZE) {
+    printf("Bad proc size\n");
+    return -1;
+  }
+
+  // Allocate process.
+  if((np = allocproc()) == 0){
+    return -1;
+  }
+  np->sz = p->sz;
+
+  //Sets the stack data for new proc
+  uint new_stack = (uint64)stack + PGSIZE;
+  int user_stack[2];
+  user_stack[0] = 0xffffffff;
+  user_stack[1] = (uint64)arg;
+  new_stack -= 2*sizeof(int);
+
+  if(mappages(np->pagetable, new_stack, PGSIZE,
+              (uint64)(p->pagetable), PTE_V | PTE_U) < 0){
+    uvmunmap(np->pagetable, TRAMPOLINE, 1, 0);
+    uvmfree(np->pagetable, 0);
+    return 0;
+  }
+  
+  if((copyout(np->pagetable, new_stack, (char*)user_stack, 2*sizeof(int))) < 0) {
+    printf("bad copyout call!\n");
+    return -1;
+  }
+
+  // copy saved user registers.
+  *(np->trapframe) = *(p->trapframe);
+
+  // Cause fork to return 0 in the child.
+  np->trapframe->a0 = 0;
+  np->trapframe->sp = new_stack;
+  np->trapframe->epc = (uint64)f;
+
+  // increment reference counts on open file descriptors.
+  for(i = 0; i < NOFILE; i++)
+    if(p->ofile[i])
+      np->ofile[i] = filedup(p->ofile[i]);
+  np->cwd = idup(p->cwd);
+
+  p->thread_count++;
+  np->thread_count = p->thread_count;
+  safestrcpy(np->name, p->name, sizeof(p->name));
+
+  pid = np->pid;
+  np->parent = p;
+  np->state = RUNNABLE;
+  release(&np->lock);
+
+  return pid;
+}
+
+uint64 join(int tid) {
+  int id = tid;
+  //printf("Kernel: Running join on %d\n", id);
+
+  //ensure that the tid of the thread is valid
+  if(tid < 0) {
+    panic("Join: Invalid TID\n");
+    return -1;
+  }
+
+  //create instances of parents/child, parent is current process
+  struct proc *parent = myproc();
+  //struct proc *target;
+  struct proc *p;
+
+  //iterate through all the processes to find the child process
+  int found_target = 0;
+  for(p = &proc[0]; p < &proc[NPROC]; p++) {
+
+    if(p->pid == id) {
+      found_target = 1;
+      break;
+    }
+
+  }
+
+  // determine if a target was found
+  if(!found_target) {
+    panic("Join: Could not find target\n");
+    return -1;
+  }
+
+  // acquire the lock on the parent process page table
+  parent->state = SLEEPING;
+  acquire(&parent->lock);
+  //printf("Kernel: Found target with pid: %d\n", p->pid);
+
+  //enter an infinite loop to wait until the target is a zombie
+  while (1) {
+    if(p->state == ZOMBIE) {
+      p->state = UNUSED;
+      p->pid = 0;
+      p->kstack = 0;
+      p->killed = 0;
+
+      //release the lock on the parent
+      release(&parent->lock);
+      break;
+    }
+
+    //sleep to save resources, also shows the parent process is sleeping
+    //sleep(parent, &parent->lock);
+  }
+
+  return 0;
 }
