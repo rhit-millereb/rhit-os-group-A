@@ -20,14 +20,16 @@ int thread_create(struct thread_t *thread, void(*f)(void*), void* arg) {
     }
 
     //Sets the stack location to go a pagetable amount for the newly created pagetable
-    if(*(uint*)pagetable % PGSIZE == 0) thread->stack = pagetable;
-    else thread->stack = pagetable - (*(uint*)pagetable % PGSIZE);
+    if((uint64)pagetable % PGSIZE == 0) thread->stack = pagetable;
+    else thread->stack = pagetable - ((uint64)pagetable % PGSIZE);
 
     //Sets the thread as started
     thread->busy = 1;
     
     //Clones the physical memory data from the old thread to the new one
-    return procclone(f, arg, thread->stack);
+    thread->id = procclone(f, arg, thread->stack);
+    if(thread->id < 0) return -1;
+    return thread->id;
 }
 
 

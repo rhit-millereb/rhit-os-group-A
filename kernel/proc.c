@@ -692,18 +692,40 @@ int procclone(void(*f)(void*), void *arg, void* stack)
   struct proc *np;
   struct proc *p = myproc();
 
+  if(((uint64)stack % PGSIZE) != 0) {
+    printf("Bad stack page size!\n");
+    return -1;
+  }
+
+  if ((p->sz - (uint64)stack) < PGSIZE) {
+    printf("Bad proc size\n");
+    return -1;
+  }
+
   // Allocate process.
   if((np = allocproc()) == 0){
     return -1;
   }
   np->sz = p->sz;
+
   //Sets the stack data for new proc
   uint new_stack = (uint64)stack + PGSIZE;
   int user_stack[2];
   user_stack[0] = 0xffffffff;
   user_stack[1] = (uint64)arg;
-  stack -= 8;
-  copyout(np->pagetable, new_stack, (char*)user_stack, 8);
+  new_stack -= 2*sizeof(int);
+
+  if(mappages(np->pagetable, new_stack, PGSIZE,
+              (uint64)(p->pagetable), PTE_V | PTE_U) < 0){
+    uvmunmap(np->pagetable, TRAMPOLINE, 1, 0);
+    uvmfree(np->pagetable, 0);
+    return 0;
+  }
+  
+  if((copyout(np->pagetable, new_stack, (char*)user_stack, 2*sizeof(int))) < 0) {
+    printf("bad copyout call!\n");
+    return -1;
+  }
 
   // copy saved user registers.
   *(np->trapframe) = *(p->trapframe);
@@ -711,7 +733,7 @@ int procclone(void(*f)(void*), void *arg, void* stack)
   // Cause fork to return 0 in the child.
   np->trapframe->a0 = 0;
   np->trapframe->sp = new_stack;
-  // np->trapframe->epc = f;
+  np->trapframe->epc = (uint64)f;
 
   // increment reference counts on open file descriptors.
   for(i = 0; i < NOFILE; i++)
