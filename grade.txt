@@ -1,0 +1,12 @@
+We would like to argue a 70%
+
+While we were unable to get the project fully working we did implement most of the required implementations.
+We were able to create threads that have a shared address space. Each thread also has a seperate stack, in which their arguments
+were added to. Each thread could also access the heap space showing that each thread has a shared memory space.
+We also showed that joining the threads worked in the desired way.
+
+We also believe that being a group of two with only a week to implment our design was a disadvantage. Had we had more time or
+a third group member, we believe we were very close to implementing a fully working project which would have allowed us
+to argue for a 100%.
+
+-Ethan Miller, Curtiss Davis
