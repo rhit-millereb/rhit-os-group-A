@@ -4,11 +4,11 @@
 #include "threads.c"
 
 // create global variables for the threads to be tested on
-int x = 0;
-int y = 0;
+int *x;
+int *y;
 
 
-int array[] = {0, 0, 0, 0, 0, 0};
+int *array;
 int num_threads_test = 6;
 
 
@@ -27,7 +27,7 @@ void test_thread_create(void *arg) {
     //calls a function in the shared space, if this runs then the thread shares the same code space successfully
     cprint("Test 1: Thread Started Function", id);
 
-    x = 1;
+    *x = 1;
 
     cprint("Completing Function", id);
     return;
@@ -46,6 +46,14 @@ void main(void) {
 
     printf("Testing Threads: \n\n");
 
+    //initialize all of the global variables
+    x = malloc(sizeof(int));
+    y = malloc(sizeof(int));
+
+    array = malloc(sizeof(int)*num_threads_test);
+    for(int i=0; i<num_threads_test; i++) {
+        array[i] = 0;
+    }
 
     //test the create functionality
     mprint("Test 1: Creating a thread...");
@@ -67,9 +75,9 @@ void main(void) {
     mprint("Test 2: Starting Join...");
     int join_result = thread_join(thread);
     // determine if the value of x is now 1, if so join works and shared global vars work
-    if(x == 1 && join_result == 0) {
+    if(*x == 1 && join_result == 0) {
         mprint("Test 2: Passed");
-    } else if (x == 0) {
+    } else if (*x == 0) {
         mprint("Test 2 FAILED: Main did not see child thread changes to global var \'x\'");
         return;
     } else if (join_result != 0) {

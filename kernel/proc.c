@@ -733,11 +733,11 @@ int procclone(void(*f)(void*), void *arg, void* stack)
 
 uint64 join(int tid) {
   int id = tid;
-  printf("Kernel: Running join on %d\n", id);
+  //printf("Kernel: Running join on %d\n", id);
 
   //ensure that the tid of the thread is valid
   if(tid < 0) {
-    printf("Join: Invalid TID\n");
+    panic("Join: Invalid TID\n");
     return -1;
   }
 
@@ -759,14 +759,14 @@ uint64 join(int tid) {
 
   // determine if a target was found
   if(!found_target) {
-    printf("Join: Could not find target\n");
+    panic("Join: Could not find target\n");
     return -1;
   }
 
   // acquire the lock on the parent process page table
   parent->state = SLEEPING;
   acquire(&parent->lock);
-  printf("Kernel: Found target with pid: %d\n", p->pid);
+  //printf("Kernel: Found target with pid: %d\n", p->pid);
 
   //enter an infinite loop to wait until the target is a zombie
   while (1) {
@@ -774,6 +774,7 @@ uint64 join(int tid) {
       p->state = UNUSED;
       p->pid = 0;
       p->kstack = 0;
+      p->killed = 0;
 
       //release the lock on the parent
       release(&parent->lock);
